@@ -79,6 +79,7 @@
 # import csv
 
 # def process_csv(filepath):
+#     file = None
 #     try:
 #         file = open(filepath, "r")
 #         reader = csv.reader(file)
