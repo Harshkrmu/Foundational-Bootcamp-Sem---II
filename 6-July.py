@@ -126,3 +126,70 @@ import numpy as np
 # index = np.argmax(cum_sum > 100000)
 # print(index)
 # print(cum_sum[index])
+
+# # Problem 4 
+
+# np.random.seed(42)
+# arr = np.random.randint(50, 251, size=(30, 5))
+
+# print("Patient Data:\n")
+# print(arr)
+
+# mean = np.mean(arr, axis=0)
+# print("\nDepartment-wise Mean:")
+# print(mean)
+
+# median = np.median(arr, axis=0)
+# print("\nDepartment-wise Median:")
+# print(median)
+
+# std = np.std(arr, axis=0)
+# print("\nDepartment-wise Standard Deviation:")
+# print(std)
+
+# highest_day = np.argmax(arr, axis=0) + 1
+# highest_value = np.max(arr, axis=0)
+
+# print("\nHighest Patient Day:")
+# for i in range(5):
+#     print(f"Department {i+1}: Day {highest_day[i]} ({highest_value[i]} arr)")
+
+# lowest_day = np.argmin(arr, axis=0) + 1
+# lowest_value = np.min(arr, axis=0)
+# print("\nLowest Patient Day:")
+# for i in range(5):
+#     print(f"Department {i+1}: Day {lowest_day[i]} ({lowest_value[i]} arr)")
+
+# lower = mean - 2 * std
+# upper = mean + 2 * std
+
+# outliers = (arr < lower) | (arr > upper)
+# print("\nOutlier Positions (Day, Department):")
+# positions = np.argwhere(outliers)
+# print(positions)
+
+# updated = arr.astype(float)
+# for col in range(5):
+#     updated[outliers[:, col], col] = mean[col]
+# print("\nData after Replacing Outliers:")
+# print(updated)
+
+import pandas as pd
+
+# data = {1:"frt",2:"fef",3:"er"}
+# data = [10,20,30,40]
+# series = pd.Series(data)
+# print(series)
+# print(series[0])
+
+# print(series.max())
+# print(series.describe())
+
+# data = {
+#     'Name': ['John', 'Anna', 'Peter', 'Linda'],
+#     'Age' : [28,24,35,32],
+#     'City' : ['New York', 'Paris', 'Berlin', 'London']
+# }
+
+# df = pd.DataFrame(data)
+# print(df)
