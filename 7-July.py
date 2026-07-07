@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 # df = pd.read_csv("19-June.csv")
 # print(df)
@@ -166,3 +167,253 @@ import numpy as np
 
 # print("\nEmployees receiving Bonus above ₹10,000 exported successfully.")
 # print(bonus_above)
+
+# data  =  {'A':  [1 ,  2 ,  3],'B':  [4 ,  5 ,  6]}
+# df  =  pd. DataFrame ( data)
+# print( df  +  2)
+# print( df  -  2)
+# print( df  *  2)
+# print( df  /  2)
+
+# print( df  >  2)
+# print( df  ==  4)
+
+# data  =  {'A':  [ True ,  False ,  True ],'B':  [ False ,  False , True ]}
+# df  =  pd. DataFrame ( data)
+
+# print( df & df)
+# print( df  |  df)
+# print(~ df)
+
+# data  =  {'A':  [1 ,  2 ,  3],  'B':  [4 ,  5 ,  6]}
+# df  =  pd. DataFrame ( data) 
+# s  =  pd. Series ([1 ,  2 ,  3])
+
+# print( df. add (s,  axis =0))
+# print( df. add (s,  axis =1))
+
+# data  =  {'A':  [1 ,  2 ,  3],  'B':  [4 ,  5 ,  6]}
+# df  =  pd. DataFrame ( data)
+# print(df.apply(lambda  x:  x  *  2))
+# print(df.map(lambda  x:  x  *  2))
+
+
+# # Matplotlib
+
+# data = {
+#     'Month': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+#     'Sales': [2500, 4000, 6000, 2300, 6070, 4500, 1000]   
+# }
+
+# df = pd.DataFrame(data)
+
+# plt.plot(df['Month'], df['Sales'], marker = 'o')
+# plt.title('Monthly Sales')
+# plt.xlabel('Month')
+# plt.ylabel('Sales')
+# plt.grid(True)
+# plt.show()
+
+# data = {
+#     'Region': ['North', 'South', 'East', 'West'],
+#     'Sales': [25000, 15000, 10000, 34000]   
+# }
+
+# df = pd.DataFrame(data)
+
+# plt.bar(df['Region'], df['Sales'], color = 'skyblue')
+# plt.title('Sales by Region')
+# plt.xlabel('Region')
+# plt.ylabel('Sales')
+# plt.grid(axis = 'y' )
+# plt.show()
+
+# dates = pd.date_range(start='2025-01-01' , periods = 6, freq='ME')
+# revenue = np.random.randint(2000, 5000, size=6)
+
+# df = pd.DataFrame({'Date': dates, 'Revenue': revenue})
+
+# plt.plot(df['Date'], df['Revenue'], marker='o', linestyle='-', color='green')
+# plt.title('Monthly Revenue')
+# plt.xlabel('Date')
+# plt.ylabel('Revenue')
+# plt.grid(True)
+# plt.xticks(rotation=45)
+# plt.tight_layout()
+# plt.show()
+
+# # Bar Graph
+
+# values = [5, 6, 3, 7, 2]
+# names = ["A","B","C","D","E"]
+# plt.bar(names, values, color="green")
+# plt.show()
+
+# # Horizontal Bar Graph
+
+# values = [5,6,3,7,2]
+# names = ["A","B","C","D","E"]
+# plt.barh(names, values, color="yellowgreen")
+# plt.show()
+
+# # Pie Chart
+
+# cars =['AUDI','BMW','FORD','TESLA','JAGUAR','MERCEDES']
+# data =[23, 17, 35, 29, 12, 41]
+
+# fig =plt.figure(figsize=(10, 7))
+# plt.pie(data, labels=cars)
+# plt.show()
+
+# # Boxplot()
+
+# np.random.seed(15)
+# dataSet = np.random.normal(100, 25, 200)
+# print(dataSet)
+# figure = plt.figure(figsize =(10, 8))
+# plt.boxplot(dataSet)
+# plt.show()
+
+# # Histogram
+
+# ages=[2,5,70,40,30,45,50,45,43,40,44,60,7,13,57,18,90,77,32,21,20,40]
+# range = (0, 100)
+# bins = 10
+
+# plt.hist(ages, bins, range, color='green',histtype='bar',rwidth=0.8)
+# plt.xlabel('age')
+# plt.ylabel('No. of people')
+# plt.title('My histogram')
+# plt.show()
+
+# # Line Graph
+
+# x = np.array([1,2,3,4])
+# y = x*2
+# plt.plot(x,y)
+# plt.show
+
+# # Scatter Plot
+
+# x_axis_value =[6, 7, 9, 8, 2,16, 3, 6,4,14,13, 4,1]
+# y_axis_value =[98, 87, 84, 86, 99, 85,102, 89, 96, 78, 77, 83, 81]
+# plt.scatter(x_axis_value, y_axis_value)
+# plt.show()
+
+# # Multiple Subplots using plt.subplots
+
+# fig, ax = plt.subplots(3, 3)
+
+# for i in ax:
+#     for j in i:
+#         j.plot(np.random.randint(0, 5, 5),np.random.randint(0, 5, 5))
+# plt.show()
+
+# fig, ax = plt.subplots(2, 2)
+# x = np.linspace(0, 10, 1000)
+
+# ax[0, 0].plot(x, np.sin(x),'r-.')
+# ax[0, 1].plot(x, np.cos(x),'g--')
+# ax[1, 0].plot(x, np.tan(x),'y-')
+# ax[1, 1].plot(x, np.sinc(x),'c.-')
+# plt.show()
+
+# # Activity 
+
+# # -----------------------------
+# # LEVEL 1: BAR CHART
+# # -----------------------------
+
+# bird_species = ['Sparrow', 'Pigeon', 'Crow', 'Parrot', 'Myna']
+# sightings = [120, 95, 150, 70, 110]
+
+# df1 = pd.DataFrame({
+#     'Species': bird_species,
+#     'Sightings': sightings
+# })
+
+# # Sort from highest to lowest
+# df1 = df1.sort_values(by='Sightings', ascending=False)
+
+# plt.figure(figsize=(8,5))
+# plt.bar(df1['Species'], df1['Sightings'], color='skyblue')
+# plt.title("Bird Species Sightings")
+# plt.xlabel("Bird Species")
+# plt.ylabel("Total Sightings")
+# plt.show()
+
+# # Most common species
+# most_common = df1.iloc[0]['Species']
+# print("Most Common Species:", most_common)
+
+# # -----------------------------
+# # LEVEL 2: LINE GRAPH
+# # -----------------------------
+
+# time = ['6 AM', '8 AM', '10 AM', '12 PM', '2 PM', '4 PM', '6 PM']
+
+# bird_activity = [90, 80, 65, 40, 35, 55, 85]
+# human_traffic = [15, 30, 60, 95, 100, 70, 25]
+
+# plt.figure(figsize=(9,5))
+
+# plt.plot(time, bird_activity, marker='o', linewidth=2,label='Bird Activity')
+
+# plt.plot(time, human_traffic, marker='s', linewidth=2,label='Human Foot Traffic')
+
+# plt.title("Bird Activity vs Human Foot Traffic")
+# plt.xlabel("Time of Day")
+# plt.ylabel("Activity Level")
+# plt.legend()
+# plt.grid(True)
+# plt.show()
+
+
+# # -----------------------------
+# # LEVEL 3: SCATTER PLOT
+# # -----------------------------
+
+# np.random.seed(42)
+
+# tree_density = np.random.randint(50, 300, 20)
+# species_diversity = np.random.uniform(1, 10, 20)
+
+# zones = pd.DataFrame({
+#     'Tree Density': tree_density,
+#     'Species Diversity': species_diversity
+# })
+
+# plt.figure(figsize=(8,6))
+# plt.scatter(
+#     zones['Tree Density'],
+#     zones['Species Diversity'],
+#     color='green',
+#     s=80
+# )
+
+# plt.title("Tree Density vs Species Diversity")
+# plt.xlabel("Tree Density")
+# plt.ylabel("Species Diversity Index")
+# plt.grid(True)
+# plt.show()
+
+# # -----------------------------
+# # EXTENSION: BUBBLE CHART
+# # -----------------------------
+
+# tree_age = np.random.randint(10, 80, 20)
+
+# plt.figure(figsize=(8,6))
+# plt.scatter(
+#     zones['Tree Density'],
+#     zones['Species Diversity'],
+#     s=tree_age * 10,
+#     alpha=0.6,
+#     color='orange'
+# )
+
+# plt.title("Bubble Chart: Tree Density vs Species Diversity")
+# plt.xlabel("Tree Density")
+# plt.ylabel("Species Diversity Index")
+# plt.grid(True)
+# plt.show()
