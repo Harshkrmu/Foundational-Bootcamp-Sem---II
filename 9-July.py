@@ -858,3 +858,308 @@
 # print("\nFiles Created:")
 # print("telecom_churn.csv")
 # print("telecom_feature_matrix.csv")
+
+# # =======================================================
+# # Q6. Supply Chain Logistics & Inventory Risk Assessment
+# # =======================================================
+
+# import matplotlib.pyplot as plt
+# import numpy as np
+# import pandas as pd
+
+# # -------------------------------------------------------------------------
+# # 0. SETUP & MOCK DATA GENERATION
+# # -------------------------------------------------------------------------
+# # Seed for reproducibility
+# np.random.seed(42)
+
+# # Generate a 60-day timeline for 2 different SKUs across 2 Warehouses
+# dates = pd.date_range(start="2026-01-01", periods=60, freq="D")
+# skus = ["SKU_1001", "SKU_1002"]
+# warehouses = ["WH_EAST", "WH_WEST"]
+
+# inventory_records = []
+# forecast_records = []
+
+# for sku in skus:
+#     for wh in warehouses:
+#         # Establish structural baselines for this specific inventory pair
+#         safety_stock = np.random.choice([30, 50, 75])
+#         lead_time = np.random.choice([2, 4, 5])
+#         current_stock = safety_stock * 1.5  # Start with healthy stock
+
+#         for dt in dates:
+#             # 1. Generate Forecast Data
+#             # Demand fluctuates dynamically (simulating volatile consumer patterns)
+#             base_demand = np.random.randint(5, 25)
+#             # Add a weekend spike or drop simulation
+#             if dt.dayofweek in [5, 6]:
+#                 base_demand = int(base_demand * np.random.choice([0.6, 1.4]))
+
+#             forecast_records.append(
+#                 {
+#                     "Date": dt,
+#                     "SkuID": sku,
+#                     "WarehouseID": wh,
+#                     "ForecastedDemand": base_demand,
+#                 }
+#             )
+
+#             # 2. Generate Daily Inventory Snapshot Logs
+#             # Simulate daily inventory depletion by demand
+#             current_stock -= base_demand
+
+#             # Simulate random inventory replenishment arrivals
+#             if np.random.rand() > 0.75:
+#                 # Reorder quantity arrives
+#                 current_stock += np.random.choice([40, 60, 80])
+
+#             daily_reorder_qty = np.random.choice([20, 40])
+
+#             inventory_records.append(
+#                 {
+#                     "Date": dt,
+#                     "SkuID": sku,
+#                     "WarehouseID": wh,
+#                     "CurrentStock": int(current_stock),
+#                     "SafetyStockLevel": safety_stock,
+#                     "DailyReorderQuantity": daily_reorder_qty,
+#                     "LeadTimeDays": lead_time,
+#                 }
+#             )
+
+# # Construct DataFrames
+# inventory_df = pd.DataFrame(inventory_records)
+# forecast_df = pd.DataFrame(forecast_records)
+
+# print("--- Initial Data Profiles ---")
+# print(f"Inventory Logs Shape: {inventory_df.shape}")
+# print(f"Forecast Table Shape: {forecast_df.shape}\n")
+
+
+# # -------------------------------------------------------------------------
+# # TASK 1: PANDAS - MERGE, ROLLING WINDOWS & STOCKOUT RISK FLAG
+# # -------------------------------------------------------------------------
+# # Merge inventory snapshot table with the historical sales forecast table
+# # We merge on Date, SkuID, and WarehouseID to maintain data granularity
+# merged_df = pd.merge(
+#     inventory_df, forecast_df, on=["Date", "SkuID", "WarehouseID"], how="inner"
+# )
+
+# # Sort values to ensure rolling windows calculate chronologically per item/location group
+# merged_df = merged_df.sort_values(by=["SkuID", "WarehouseID", "Date"]).reset_index(
+#     drop=True
+# )
+
+# # Compute 7-day and 30-day moving averages of demand grouped by Sku and Warehouse
+# merged_df["Demand_7D_MA"] = (
+#     merged_df.groupby(["SkuID", "WarehouseID"])["ForecastedDemand"]
+#     .transform(lambda x: x.rolling(window=7, min_periods=1).mean())
+# )
+
+# merged_df["Demand_30D_MA"] = (
+#     merged_df.groupby(["SkuID", "WarehouseID"])["ForecastedDemand"]
+#     .transform(lambda x: x.rolling(window=30, min_periods=1).mean())
+# )
+
+# # Create a Boolean flag for "Stockout Risk"
+# # True if Current Stock drops to or below the designated Safety Stock Level
+# merged_df["StockoutRisk"] = (
+#     merged_df["CurrentStock"] <= merged_df["SafetyStockLevel"]
+# )
+
+
+# # -------------------------------------------------------------------------
+# # TASK 2: NUMPY - MULTI-TIER PRIORITY ASSIGNMENT VIA NP.SELECT
+# # -------------------------------------------------------------------------
+# # Define logic boundaries for restocking order priorities
+# conditions = [
+#     (merged_df["CurrentStock"] <= 0),  # Tier 1: Absolute Stockout
+#     (merged_df["CurrentStock"] <= merged_df["SafetyStockLevel"])
+#     & (merged_df["LeadTimeDays"] >= 4),  # Tier 2: Low safety buffer + high lead time
+#     (merged_df["CurrentStock"] <= merged_df["SafetyStockLevel"]),  # Tier 3: Encroaching safety buffer
+# ]
+
+# choices = ["CRITICAL", "HIGH", "MEDIUM"]
+
+# # Execute conditions; any row not meeting the criteria defaults to 'LOW' priority
+# merged_df["RestockPriority"] = np.select(conditions, choices, default="LOW")
+
+
+# # -------------------------------------------------------------------------
+# # TASK 3: MATPLOTLIB - STEP-PLOT VISUALIZATION
+# # -------------------------------------------------------------------------
+# # Isolate a specific SKU and Warehouse slice for clean visualization plotting
+# viz_df = merged_df[
+#     (merged_df["SkuID"] == "SKU_1001") & (merged_df["WarehouseID"] == "WH_EAST")
+# ].copy()
+
+# plt.figure(figsize=(14, 7))
+
+# # 1. Plot step-line showing daily stock variations
+# plt.step(
+#     viz_df["Date"],
+#     viz_df["CurrentStock"],
+#     where="mid",
+#     color="#1f77b4",
+#     linewidth=2.5,
+#     label="Current Stock Level",
+# )
+
+# # 2. Add horizontal dashed line indicating the safety stock threshold
+# safety_threshold_val = viz_df["SafetyStockLevel"].iloc[0]
+# plt.axhline(
+#     y=safety_threshold_val,
+#     color="#ff7f0e",
+#     linestyle="--",
+#     linewidth=1.8,
+#     label=f"Safety Stock Threshold ({safety_threshold_val})",
+# )
+
+# # 3. Add zero-baseline line to anchor the eye during stockout visual dips
+# plt.axhline(y=0, color="black", linestyle=":", alpha=0.4)
+
+# # 4. Filter data to locate specific points where stock dipped below zero
+# stockout_events = viz_df[viz_df["CurrentStock"] < 0]
+
+# # Highlight stockout dates with red marker flags
+# plt.scatter(
+#     stockout_events["Date"],
+#     stockout_events["CurrentStock"],
+#     color="#d62728",
+#     marker="v",
+#     s=120,
+#     zorder=5,
+#     label="Stockout Infraction (Stock < 0)",
+# )
+
+# # Polish Visual Aesthetics
+# plt.title(
+#     "SKU_1001 Stock Trajectory & Risk Vulnerability (WH_EAST)",
+#     fontsize=14,
+#     weight="bold",
+#     pad=15,
+# )
+# plt.xlabel("Timeline", fontsize=11, labelpad=10)
+# plt.ylabel("Inventory Quantity (Units)", fontsize=11, labelpad=10)
+# plt.grid(True, linestyle="--", alpha=0.5)
+# plt.legend(loc="upper right", frameon=True, facecolor="white", edgecolor="none")
+
+# # Clean formatting for date labels on X-axis
+# plt.gcf().autofmt_xdate()
+# plt.tight_layout()
+
+# # Display the final plot
+# plt.show()
+
+# # -------------------------------------------------------------------------
+# # PREVIEW DATA OUTPUT
+# # -------------------------------------------------------------------------
+# print("--- Processed Output Preview (First 10 records for SKU_1001 @ WH_EAST) ---")
+# columns_to_show = [
+#     "Date",
+#     "CurrentStock",
+#     "SafetyStockLevel",
+#     "ForecastedDemand",
+#     "Demand_7D_MA",
+#     "StockoutRisk",
+#     "RestockPriority",
+# ]
+# print(viz_df[columns_to_show].head(10).to_string(index=False))
+
+# # =====================================================================
+# # Q7. Healthcare Electronic Health Records (EHR) Longitudinal Analysis
+# # =====================================================================
+
+# import io
+# import numpy as np
+# import pandas as pd
+# import matplotlib.pyplot as plt
+# import matplotlib.dates as mdates
+
+# csv_data = """PatientID,VisitDate,Systolic_BP,Diastolic_BP,Cholesterol,BloodSugar
+# PAT_001,2024-01-10,120,80,190,95
+# PAT_001,2024-02-15,125,82,,98
+# PAT_001,2024-04-20,132,85,210,105
+# PAT_001,2024-07-11,,88,,115
+# PAT_001,2024-09-05,145,92,230,
+# PAT_001,2025-01-15,155,95,245,130
+# PAT_001,2025-05-22,162,100,,145
+# PAT_002,2024-01-15,150,95,260,180
+# PAT_002,2024-03-01,142,90,,160
+# PAT_002,2024-05-20,135,85,220,130
+# PAT_002,2024-08-12,128,82,200,110
+# PAT_002,2024-11-05,,80,,95
+# PAT_002,2025-03-18,122,78,185,90
+# PAT_003,2024-02-01,118,75,175,85
+# PAT_003,2024-05-14,120,,180,
+# PAT_003,2024-08-22,,,178,90
+# PAT_003,2024-11-30,122,78,,88
+# PAT_003,2025-04-05,115,74,170,82"""
+
+# df = pd.read_csv(io.StringIO(csv_data))
+# df["VisitDate"] = pd.to_datetime(df["VisitDate"])
+# df = df.sort_values(by=["PatientID", "VisitDate"]).reset_index(drop=True)
+
+# df_filled = df.copy()
+# filled_cols = ["Systolic_BP", "Diastolic_BP", "Cholesterol", "BloodSugar"]
+# df_filled[filled_cols] = df.groupby("PatientID")[filled_cols].ffill(limit=2)
+
+# baseline_metrics = df_filled.groupby("PatientID").agg(
+#     Max_Systolic=("Systolic_BP", "max"),
+#     Min_Systolic=("Systolic_BP", "min"),
+#     Avg_Systolic=("Systolic_BP", "mean"),
+#     Std_Systolic=("Systolic_BP", "std")
+# )
+
+# print("=== 1. HISTORICAL PATIENT BASELINES ===")
+# print(baseline_metrics.to_string(), "\n")
+
+# def calculate_bp_slope(patient_df):
+#     valid_data = patient_df.dropna(subset=["VisitDate", "Systolic_BP"])
+#     if len(valid_data) < 2:
+#         return 0.0
+#     days_elapsed = (valid_data["VisitDate"] - valid_data["VisitDate"].min()).dt.days.values
+#     systolic_values = valid_data["Systolic_BP"].values
+#     slope, _ = np.polyfit(days_elapsed, systolic_values, 1)
+#     return slope
+
+# slopes = df_filled.groupby("PatientID").apply(lambda x: calculate_bp_slope(x), include_groups=False)
+
+# print("=== 2. PATIENT LONGITUDINAL TRAJECTORIES ===")
+# for pid, slope in slopes.items():
+#     trend = "⚠️ CRITICAL WORSENING" if slope > 0.05 else ("IMPROVING" if slope < -0.05 else "STABLE")
+#     print(f"Patient: {pid} | Slope: {slope:+.4f} mmHg/day ({trend})")
+# print("\n")
+
+# unique_patients = df_filled["PatientID"].unique()
+# fig, axes = plt.subplots(len(unique_patients), 1, figsize=(11, 9), sharex=True)
+
+# for i, patient_id in enumerate(unique_patients):
+#     ax = axes[i]
+#     p_data = df_filled[df_filled["PatientID"] == patient_id].sort_values("VisitDate")
+#     p_data_sbp = p_data.dropna(subset=["Systolic_BP"])
+#     p_data_dbp = p_data.dropna(subset=["Diastolic_BP"])
+    
+#     ax.plot(p_data_sbp["VisitDate"], p_data_sbp["Systolic_BP"], marker='o', color='black', linewidth=2, label="Systolic BP")
+#     ax.plot(p_data_dbp["VisitDate"], p_data_dbp["Diastolic_BP"], marker='s', color='dimgray', linestyle='--', label="Diastolic BP")
+    
+#     ax.axhspan(140, 180, color='crimson', alpha=0.12, label="Hypertension Stage 2 (>=140)")
+#     ax.axhspan(120, 140, color='darkorange', alpha=0.12, label="Elevated / Stage 1 (120-140)")
+#     ax.axhspan(60, 120, color='forestgreen', alpha=0.08, label="Normal Range (<120)")
+    
+#     p_slope = slopes[patient_id]
+#     status_str = "⚠️ RISK FLAG: WORSENING" if p_slope > 0.05 else "STABLE / RESPONDING TO INTERVENTION"
+    
+#     ax.set_title(f"Patient: {patient_id}  |  Calculated Slope: {p_slope:+.4f} mmHg/day  |  Status: {status_str}", fontsize=10, weight='bold', pad=8)
+#     ax.set_ylabel("Pressure (mmHg)", fontsize=9)
+#     ax.set_ylim(55, 185)
+#     ax.grid(True, linestyle=':', alpha=0.5)
+    
+#     ax.xaxis.set_major_locator(mdates.MonthLocator(interval=2))
+#     ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
+
+# plt.xlabel("Longitudinal Timeline (Timeline of Hospital Encounters)", fontsize=10, labelpad=10)
+# axes[0].legend(loc="upper left", bbox_to_anchor=(1.01, 1.05), borderaxespad=0, frameon=True)
+# plt.tight_layout()
+# plt.show()
